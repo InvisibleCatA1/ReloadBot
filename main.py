@@ -1,4 +1,3 @@
-# Create a simple discord bot in python
 import asyncio
 import math
 import os
@@ -96,6 +95,9 @@ async def youtube(ctx, *, query):
 # create a command that says your Hypiexl level
 @client.command()
 async def hypixel(ctx, name: str):
+    if name is None:
+        await ctx.reply("Please enter a name")
+        return
     await ctx.send("Getting Hypixel info...")
     data = requests.get(
         url="https://api.hypixel.net/player",
@@ -114,10 +116,18 @@ async def hypixel(ctx, name: str):
 
         network_level = (math.sqrt((2 * player["networkExp"]) + 30625) / 50) - 2.5
         network_level = round(network_level, 2)
-        # create a variable for the players last login formated as a date
-        last_login = datetime.fromtimestamp(player["lastLogin"] / 1000)
+        # create a variable for the players last login formated as a date then remove the hours, minutes, seconds,
+        # and milliseconds
+        if isinstance(player["lastLogin"], KeyError):
+            last_login = "Unknown"
+        else:
+         last_login = datetime.utcfromtimestamp(player["lastLogin"] / 1000).strftime('%Y-%m-%d')
 
-        rank = player['newPackageRank'] if player['newPackageRank'] else None
+        if isinstance(player["newPackageRank"], KeyError):
+            rank = "Unknown"
+            return
+        else:
+            rank = player["newPackageRank"]
         if rank == "VIP":
             rank = "Vip"
         elif rank == "VIP_PLUS":
@@ -315,5 +325,5 @@ async def on_command_error(ctx, error):
     else:
         print(error)
 
-
-client.run(TOKEN)
+if __name__ == "__main__":
+    client.run(TOKEN)
