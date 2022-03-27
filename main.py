@@ -71,7 +71,6 @@ async def meme(ctx):
     await ctx.reply(post.url)
 
 
-# create a command that insults someone
 @client.command()
 async def insult(ctx, member: discord.Member):
     await ctx.reply(
@@ -115,7 +114,9 @@ async def hypixel(ctx, name: str):
 
         network_level = (math.sqrt((2 * player["networkExp"]) + 30625) / 50) - 2.5
         network_level = round(network_level, 2)
-        last_login = datetime.fromtimestamp(player["lastLogin"] / 1000) if player["lastLogin"] else "Unknown"
+        # create a variable for the players last login formated as a date
+        last_login = datetime.fromtimestamp(player["lastLogin"] / 1000)
+
         rank = player['newPackageRank'] if player['newPackageRank'] else None
         if rank == "VIP":
             rank = "Vip"
@@ -135,7 +136,7 @@ async def hypixel(ctx, name: str):
         embed.add_field(name="Rank", value=rank, inline=True)
         embed.add_field(name="Network Level", value=str(network_level), inline=True)
         # add a field for there last login but format it as a date
-        embed.add_field(name="Last Login", value=last_login, inline=True)
+        embed.add_field(name="Last Login", value=str(last_login), inline=True)
         await ctx.send(embed=embed)
 
     if not data['success']:
@@ -262,17 +263,19 @@ async def guess(ctx):
 # the suggestion will be in a embed message with a check reaction and a X reaction
 @client.command()
 async def suggest(ctx, *, suggestion):
+    await ctx.message.delete()
+
     embed = discord.Embed(title="Suggestion", description=suggestion, color=0x00ff00)
     embed.set_footer(text="Suggested by " + ctx.author.name)
+    embed.set_thumbnail(url=client.u)
+    embed.timestamp = datetime.utcnow()
     channel = client.get_channel(957674791828090920)
-    embed.set_thumbnail()
     message = await channel.send(embed=embed)
     await message.add_reaction("✅")
     await message.add_reaction("❌")
-    await ctx.message.delete()
 
-
-# create a serverinfo command that will show the server name, the number of members, the number of channels, and the number of roles
+# create a serverinfo command that will show the server name, the number of members, the number of channels,
+# and the number of roles
 @client.command()
 async def serverinfo(ctx):
     embed = discord.Embed(title=ctx.guild.name, description=f"Here is the server info for {ctx.guild.name}",
@@ -281,7 +284,6 @@ async def serverinfo(ctx):
     embed.add_field(name="Channels", value=str(len(ctx.guild.channels)))
     embed.add_field(name="Roles", value=str(len(ctx.guild.roles)))
     await ctx.send(embed=embed)
-
 
 
 # create a command the displays all the commands as a help command
