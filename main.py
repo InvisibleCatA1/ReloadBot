@@ -4,7 +4,7 @@ import math
 import os
 import random
 import re
-from collections import Counter
+from datetime import datetime
 
 import asyncpraw
 import discord
@@ -110,12 +110,13 @@ async def hypixel(ctx, name: str):
         player = data['player']
         if player is None:
             print("Player not found")
-            await ctx.send("Player not found")
+            await ctx.send("Error: **Player not found**")
             return
 
         network_level = (math.sqrt((2 * player["networkExp"]) + 30625) / 50) - 2.5
         network_level = round(network_level, 2)
-        rank = player['newPackageRank']
+        last_login = datetime.fromtimestamp(player["lastLogin"] / 1000) if player["lastLogin"] else "Unknown"
+        rank = player['newPackageRank'] if player['newPackageRank'] else None
         if rank == "VIP":
             rank = "Vip"
         elif rank == "VIP_PLUS":
@@ -129,10 +130,16 @@ async def hypixel(ctx, name: str):
         else:
             rank = "Default"
 
-        await ctx.send(f"``{player['displayname']}``'s Hypixel level is **{network_level}**")
-        await ctx.send(f"``{player['displayname']}``'s rank is **{rank}**")
+        # send the info
+        embed = discord.Embed(title="Hypixel info", description=f"Here is {name}'s Hypixel stats", color=0x00ff00)
+        embed.add_field(name="Rank", value=rank, inline=True)
+        embed.add_field(name="Network Level", value=str(network_level), inline=True)
+        # add a field for there last login but format it as a date
+        embed.add_field(name="Last Login", value=last_login, inline=True)
+        await ctx.send(embed=embed)
+
     if not data['success']:
-        await ctx.send("Error: " + data['cause'])
+        await ctx.send("Error: **" + data['cause'] + "**")
 
 
 # create a command that searches for a song on YouTube and plays it in a voice channel that the author is in
@@ -265,19 +272,25 @@ async def suggest(ctx, *, suggestion):
     await ctx.message.delete()
 
 
-# create a command the displays all of the commands and their discriptions
+# create a command the displays all the commands as a help command
+# the prefix is >
 @client.command()
-async def commands(ctx):
-    embed = discord.Embed(title="Commands", description="", color=0x00ff00)
-    for command in client.commands:
-        embed.add_field(name=command.name, value=command.discription)
+async def help(ctx):
+    embed = discord.Embed(title="Help", description="Here are all of the commands", color=0x00ff00)
+    embed.add_field(name=">play", value="Plays a song from youtube", inline=False)
+    embed.add_field(name=">pause", value="Pauses the song", inline=False)
+    embed.add_field(name=">resume", value="Resumes the song", inline=False)
+    embed.add_field(name=">stop", value="Stops the song", inline=False)
+    embed.add_field(name=">leave", value="Leaves the voice channel", inline=False)
+    embed.add_field(name=">guess", value="Guess a number between 1 and 100", inline=False)
+    embed.add_field(name=">suggest", value="Suggest a project", inline=False)
+    embed.add_field(name=">help", value="Displays all of the commands", inline=False)
+    embed.add_field(name=">ping", value="Displays the bot's ping", inline=False)
+    embed.add_field(name=">hypixel", value="Displays the hypixel stats of the user", inline=False)
+    embed.add_field(name=">serverinfo", value="Displays the server info", inline=False)
+    embed.add_field(name=">pp", value="Displays the pp length of a user", inline=False)
+
     await ctx.send(embed=embed)
-
-
-
-async def close():
-    await client.close()
-    await reddit.close()
 
 
 # handle unknown commands
@@ -285,6 +298,8 @@ async def close():
 async def on_command_error(ctx, error):
     if isinstance(error, commands.CommandNotFound):
         await ctx.reply("That command does not exist")
+    else:
+        print(error)
 
 
 client.run(TOKEN)
