@@ -36,7 +36,7 @@ async def youtube_search(query):
 
 @client.event
 async def on_ready():
-    await client.change_presence(activity=discord.Game(name='>botHelp'))
+    await client.change_presence(activity=discord.Game(name='>help'))
     # print basic info about the bot and the reddit account
     print(f'Logged in as [{client.user.name}] for discord bot')
     print(f'User ID: [{client.user.id}]')
@@ -272,6 +272,18 @@ async def suggest(ctx, *, suggestion):
     await ctx.message.delete()
 
 
+# create a serverinfo command that will show the server name, the number of members, the number of channels, and the number of roles
+@client.command()
+async def serverinfo(ctx):
+    embed = discord.Embed(title=ctx.guild.name, description=f"Here is the server info for {ctx.guild.name}",
+                          color=0x00ff00)
+    embed.add_field(name="Members", value=ctx.guild.member_count)
+    embed.add_field(name="Channels", value=str(len(ctx.guild.channels)))
+    embed.add_field(name="Roles", value=str(len(ctx.guild.roles)))
+    await ctx.send(embed=embed)
+
+
+
 # create a command the displays all the commands as a help command
 # the prefix is >
 @client.command()
@@ -283,7 +295,7 @@ async def help(ctx):
     embed.add_field(name=">stop", value="Stops the song", inline=False)
     embed.add_field(name=">leave", value="Leaves the voice channel", inline=False)
     embed.add_field(name=">guess", value="Guess a number between 1 and 100", inline=False)
-    embed.add_field(name=">suggest", value="Suggest a project", inline=False)
+    embed.add_field(name=">suggest", value="Suggest a change for Reload", inline=False)
     embed.add_field(name=">help", value="Displays all of the commands", inline=False)
     embed.add_field(name=">ping", value="Displays the bot's ping", inline=False)
     embed.add_field(name=">hypixel", value="Displays the hypixel stats of the user", inline=False)
